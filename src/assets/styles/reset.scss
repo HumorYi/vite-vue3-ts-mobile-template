@@ -1,0 +1,10 @@
+/* 移动端点击高亮 */
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/* 禁用长按弹出菜单 */
+a,
+img {
+  -webkit-touch-callout: none;
+}

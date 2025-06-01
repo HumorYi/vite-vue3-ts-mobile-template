@@ -1,0 +1,20 @@
+$max-width-app-container: 768px;
+$min-width-app-container: 320px;
+
+/*
+1rem = (100 / 设计稿宽度)vw * 10 = 10px
+font-size: 2.6667vw; 375px 设计稿下：1rem = 10px
+font-size: 1.3334vw; /* 750px 设计稿下：1rem = 10px
+*/
+$font-size-html: 2.6667vw;
+$font-size-html-max: 18px;
+
+$font-size-body: 1.4rem;
+$font-size-body-min: 14px;
+$font-size-body-max: $font-size-html-max;
+
+$font-family-body:
+  Arial, 'Microsoft Yahei', 'Helvetica Neue', Helvetica, sans-serif;
+
+$color: rgb(245 229 10);
+$bg-color: rgb(7 241 237);

@@ -1,0 +1,27 @@
+/* 安全区域 */
+
+@mixin safe-area(
+  $dirs: (
+    'top': 0,
+    'right': 0,
+    'bottom': 0,
+    'left': 0
+  ),
+  $pos: null
+) {
+  $prefix: 'padding-';
+  $fallback: 0px;
+
+  @if ($pos) {
+    position: $pos;
+
+    $prefix: '';
+  }
+
+  @each $key, $val in $dirs {
+    #{$prefix}#{$key}: calc(
+      constant(safe-area-inset-#{$key}, $fallback) + $val
+    );
+    #{$prefix}#{$key}: calc(env(safe-area-inset-#{$key}, $fallback) + $val);
+  }
+}

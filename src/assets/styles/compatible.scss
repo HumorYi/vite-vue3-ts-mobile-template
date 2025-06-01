@@ -1,0 +1,13 @@
+@use './mixins' as *;
+
+/* 兼容性处理 */
+
+.compatible {
+  &-pos-sticky {
+    @include compatible-position-sticky();
+  }
+
+  &-backdrop-filter {
+    @include compatible-backdrop-filter();
+  }
+}

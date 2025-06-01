@@ -1,0 +1,36 @@
+@use '../mixins' as minxis;
+@use '../optimize.scss';
+
+.platform {
+  &-safe-area {
+    @include minxis.safe-area();
+
+    &-v {
+      @include minxis.safe-area(
+        (
+          top: 0,
+          bottom: 0
+        )
+      );
+    }
+
+    &-h {
+      @include minxis.safe-area(
+        (
+          left: 0,
+          right: 0
+        )
+      );
+    }
+  }
+
+  &-scroll {
+    /* winphone8 和 android4+ */
+    overflow: auto;
+    /* 开启iOS弹性滚动 */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+
+    @extend .optimize-gpu;
+  }
+}

@@ -1,0 +1,42 @@
+@use 'variables' as *;
+
+@charset "utf-8";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app,
+#app-container {
+  width: 100%;
+  height: 100%;
+}
+
+html {
+  font-size: $font-size-html;
+}
+
+body {
+  font-size: clamp($font-size-body-min, $font-size-body, $font-size-body-max);
+  font-family: $font-family-body;
+  color: $color;
+  background-color: $bg-color;
+}
+
+#app-container {
+  margin: 0 auto;
+  // min-width: $min-width-app-container;
+}
+
+@media only screen and (width >= $max-width-app-container) {
+  html {
+    font-size: $font-size-html-max;
+  }
+
+  #app-container {
+    margin: 0 auto;
+    max-width: $max-width-app-container;
+  }
+}

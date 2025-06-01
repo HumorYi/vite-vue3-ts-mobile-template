@@ -1,0 +1,124 @@
+@mixin one-px($color, $radius) {
+  @include _one-px-handle($color);
+
+  &-top {
+    @include _one-px-handle($color, top);
+  }
+
+  &-right {
+    @include _one-px-handle($color, right);
+  }
+
+  &-bottom {
+    @include _one-px-handle($color, bottom);
+  }
+
+  &-left {
+    @include _one-px-handle($color, left);
+  }
+
+  &-radius {
+    @include _one-px-radius($color, $radius);
+
+    &-top {
+      @include _one-px-radius($color, $radius, ('top-left'));
+    }
+
+    &-right {
+      @include _one-px-radius($color, $radius, ('top-right'));
+    }
+
+    &-bottom {
+      @include _one-px-radius($color, $radius, ('bottom-right'));
+    }
+
+    &-left {
+      @include _one-px-radius($color, $radius, ('bottom-left'));
+    }
+  }
+}
+
+@mixin _one-px-handle($color: black, $dir: all) {
+  $px: 1px;
+  $size: 100%;
+  $w: $size;
+  $h: $size;
+  $ddpxs: (2, 3);
+
+  position: relative;
+  border: none;
+
+  &::after {
+    @if $dir == all {
+      top: 0;
+      left: 0;
+      border-width: $px;
+      border-style: solid;
+      border-color: $color;
+    } @else {
+      background-color: $color;
+
+      @if $dir == top {
+        top: 0;
+      } @else if $dir == bottom {
+        bottom: 0;
+      } @else if $dir == left {
+        left: 0;
+      } @else if $dir == right {
+        right: 0;
+      }
+
+      @if $dir == top or $dir == bottom {
+        left: 0;
+
+        $h: $px;
+      } @else if $dir == left or $dir == right {
+        top: 0;
+
+        $w: $px;
+      }
+    }
+
+    content: '';
+    position: absolute;
+    transform-origin: 0 0;
+    pointer-events: none;
+    width: $w;
+    height: $h;
+
+    @each $ddpx in $ddpxs {
+      @media only screen and (resolution >= #{$ddpx}dppx) {
+        $w: calc($size * $ddpx);
+        $h: $w;
+        $dpx: calc($px * $ddpx);
+
+        @if $dir == all {
+          border-width: $dpx;
+        } @else if $dir == top or $dir == bottom {
+          $h: $dpx;
+        } @else if $dir == left or $dir == right {
+          $w: $dpx;
+        }
+
+        width: $w;
+        height: $h;
+        transform: scale(calc(1 / $ddpx));
+      }
+    }
+  }
+}
+
+@mixin _one-px-radius($color, $radius, $dirs: null) {
+  @include _one-px-handle($color);
+
+  &,
+  &::after {
+    @if $dirs {
+      @each $dir in $dirs {
+        border-#{$dir}-radius: $radius;
+      }
+    } @else {
+      border-radius: $radius;
+    }
+  }
+}
