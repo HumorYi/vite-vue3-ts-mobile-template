@@ -27,7 +27,11 @@
     <button @click="toSettings">设置</button>
   </div>
   <div v-if="user.isLogin" class="m-10">
-    <button class="c-g">用户名: {{ user.user?.name }}</button>
+    <p class="c-g">用户名: {{ user.user?.name }}</p>
+
+    <button class="c-g" @click="user.setUser({ name: 'update' })">
+      更改用户名
+    </button>
   </div>
   <div v-if="user.hasRoutePermission(RouteName.user.root)">
     <button @click="toUser">用户</button>
