@@ -7,7 +7,9 @@ export function initAndriod() {
 export function fixPositionFixed() {
   document.body.style.overflow = 'auto'
 
-  setTimeout(() => {
+  const timer = setTimeout(() => {
+    clearTimeout(timer)
+
     document.body.style.overflow = ''
   }, 100)
 }

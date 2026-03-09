@@ -12,7 +12,7 @@
   $prefix: 'padding-';
   $fallback: 0px;
 
-  @if ($pos) {
+  @if $pos {
     position: $pos;
 
     $prefix: '';

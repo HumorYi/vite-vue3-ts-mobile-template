@@ -3,13 +3,13 @@ import { createPinia } from 'pinia'
 import { createPersistedState } from 'pinia-plugin-persistedstate';
 import VueLazyLoad from 'vue3-lazyload'
 
+import '@unocss/reset/normalize.css'
+import 'virtual:uno.css'
+import './assets/styles/index.scss'
+
 import App from './App.vue'
 import directives from './directives'
 import router from './router'
-
-import 'normalize.css'
-import 'virtual:uno.css'
-import './assets/styles/index.scss'
 
 import { initEnvs } from './utils/envs'
 import { initPlatforms } from './utils/platforms'

@@ -2,14 +2,12 @@
 
 @mixin compatible-position-sticky($dir: top, $val: 0) {
   position: sticky;
-  $dir: $val;
-  z-index: 10;
-
   position: relative;
+  z-index: 10;
+  $dir: $val;
 }
 
 @mixin compatible-backdrop-filter($val: 10px) {
   backdrop-filter: blur($val);
-
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgb(255 255 255 / 70%);
 }

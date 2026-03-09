@@ -1,44 +1,44 @@
 @mixin one-px($color, $radius) {
-  @include _one-px-handle($color);
+  @include one-px-handle($color);
 
   &-top {
-    @include _one-px-handle($color, top);
+    @include one-px-handle($color, top);
   }
 
   &-right {
-    @include _one-px-handle($color, right);
+    @include one-px-handle($color, right);
   }
 
   &-bottom {
-    @include _one-px-handle($color, bottom);
+    @include one-px-handle($color, bottom);
   }
 
   &-left {
-    @include _one-px-handle($color, left);
+    @include one-px-handle($color, left);
   }
 
   &-radius {
-    @include _one-px-radius($color, $radius);
+    @include one-px-radius($color, $radius);
 
     &-top {
-      @include _one-px-radius($color, $radius, ('top-left'));
+      @include one-px-radius($color, $radius, ('top-left'));
     }
 
     &-right {
-      @include _one-px-radius($color, $radius, ('top-right'));
+      @include one-px-radius($color, $radius, ('top-right'));
     }
 
     &-bottom {
-      @include _one-px-radius($color, $radius, ('bottom-right'));
+      @include one-px-radius($color, $radius, ('bottom-right'));
     }
 
     &-left {
-      @include _one-px-radius($color, $radius, ('bottom-left'));
+      @include one-px-radius($color, $radius, ('bottom-left'));
     }
   }
 }
 
-@mixin _one-px-handle($color: black, $dir: all) {
+@mixin one-px-handle($color: black, $dir: all) {
   $px: 1px;
   $size: 100%;
   $w: $size;
@@ -52,8 +52,8 @@
     @if $dir == all {
       top: 0;
       left: 0;
-      border-width: $px;
       border-style: solid;
+      border-width: $px;
       border-color: $color;
     } @else {
       background-color: $color;
@@ -108,8 +108,8 @@
   }
 }
 
-@mixin _one-px-radius($color, $radius, $dirs: null) {
-  @include _one-px-handle($color);
+@mixin one-px-radius($color, $radius, $dirs: null) {
+  @include one-px-handle($color);
 
   &,
   &::after {

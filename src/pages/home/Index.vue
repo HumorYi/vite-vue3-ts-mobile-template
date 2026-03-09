@@ -17,23 +17,30 @@
     />
   </div>
 
-  <div>
+  <div v-if="!user.isLogin">
     <button @click="toLogin">登录</button>
   </div>
   <div>
     <button @click="user.logout">登出</button>
   </div>
-  <div v-if="user.hasRoutePermission(RouteName.settings.root)">
+  <div v-if="hasRoutePermission(RouteName.settings.root)">
     <button @click="toSettings">设置</button>
   </div>
+
   <div v-if="user.isLogin" class="m-10">
     <p class="c-g">用户名: {{ user.user?.name }}</p>
 
-    <button class="c-g" @click="user.setUser({ name: 'update' })">
+    <button
+      class="c-g"
+      @click="user.setUser({ name: 'update' }, { name: 'update' }, apiOption)"
+    >
       更改用户名
     </button>
+
+    <User v-if="isShowUser" />
+    <button @click="isShowUser = !isShowUser">组件卸载自动取消请求</button>
   </div>
-  <div v-if="user.hasRoutePermission(RouteName.user.root)">
+  <div v-if="hasRoutePermission(RouteName.user.root)">
     <button @click="toUser">用户</button>
   </div>
   <div class="mt-10">
@@ -41,7 +48,7 @@
   </div>
 
   <div class="v-input">
-    <input placeholder="" v-model="value" v-validate="validateInput" />
+    <input placeholder="" v-model="validateValue" v-validate="validateInput" />
   </div>
 
   <div class="copy flex-center">
@@ -100,15 +107,24 @@
 </template>
 
 <script lang="ts" setup name="Home">
-import { getFile } from '@/api/common'
+import { useRouter } from 'vue-router'
+
+import User from './components/User.vue'
+
+import { apiGetFile } from '@/api/common'
+import { useApiOption } from '@/composables/useApiOption'
 import { RouteName } from '@/config/router'
 import { useUserStore } from '@/store/useUserStore'
-import { useRouter } from 'vue-router'
+import { hasRoutePermission } from '@/utils/route'
 
 const router = useRouter()
 
-const value = ref('')
+const apiOption = useApiOption()
+
+const validateValue = ref('')
 const content = ref('被复制的内容')
+
+const isShowUser = ref(false)
 
 const validateInput = (val: string) => {
   if (!val) {
@@ -127,48 +143,31 @@ const toUser = () => router.push({ name: RouteName.user.root })
 const user = useUserStore()
 
 const download = async () => {
-  await getFile({
+  await apiGetFile({
     filename: 'test.txt'
   })
 
   console.log('download file')
 }
+
+onMounted(() => {
+  console.log('首页')
+})
 </script>
 
 <style lang="scss" scoped>
-.img-container {
-  width: 200px;
-  height: 200px;
-
-  img {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.one-px {
-  $color: black;
-  $radius: 10px;
-
-  @include mixins.one-px($color, $radius);
-}
-
-div {
-  font-size: 14px;
-}
-
 .v-input {
   width: 200px;
 }
 
 .water-marker {
-  width: 200px;
-  height: 200px;
+  width: 400px;
+  height: 400px;
 }
 
 .draggable {
   margin: 20px auto;
-  width: 200px;
+  width: 400px;
   height: 100px;
   background-color: green;
 }
@@ -178,7 +177,7 @@ div {
   top: 20px;
   left: 20px;
   margin: 20px auto;
-  width: 200px;
+  width: 400px;
   height: 100px;
   background-color: blue;
 

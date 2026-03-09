@@ -3,8 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import routes from './routes'
 
 import { RouteName } from '@/config/router'
-import { useUserStore } from '@/store/useUserStore'
 import { cancelAllReq } from '@/http/factory/req-repeat'
+import { useUserStore } from '@/store/useUserStore'
 
 const router = createRouter({
   history: createWebHistory(),

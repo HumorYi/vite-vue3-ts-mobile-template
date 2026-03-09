@@ -1,9 +1,9 @@
 @use '../mixins' as minxis;
-@use '../optimize.scss';
+@use '../optimize';
 
 .platform {
   &-safe-area {
-    @include minxis.safe-area();
+    @include minxis.safe-area;
 
     &-v {
       @include minxis.safe-area(
@@ -27,10 +27,11 @@
   &-scroll {
     /* winphone8 和 android4+ */
     overflow: auto;
+
     /* 开启iOS弹性滚动 */
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
 
-    @extend .optimize-gpu;
+    @extend %optimize-gpu !optional;
   }
 }

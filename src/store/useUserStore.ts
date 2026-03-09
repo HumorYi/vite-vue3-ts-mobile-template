@@ -1,7 +1,9 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import {
-  type RouteRecordRaw,
-  type RouteLocationAsRelativeGeneric
+  useRoute,
+  useRouter,
+  type RouteLocationAsRelativeGeneric,
+  type RouteRecordRaw
 } from 'vue-router'
 
 import {
@@ -9,29 +11,31 @@ import {
   RouteName,
   RouterPermission
 } from '@/config/router'
-import router from '@/router'
-import permission from '@/router/routes/permission'
-import { type User } from '@/types/api'
+
+import { type User } from '@/types/api/user'
 
 import { apiGetUser, apiLogin, apiLogout, apiSetUser } from '@/api/user'
 
 import {
-  hasRoutePermission as hasRoutePermissionUtil,
   resetRoutePermission,
   setRoutePermissionByAuth,
   setRoutePermissionByDynamic,
   setRoutePermissionByRole
 } from '@/utils/route'
 
-import { getToken, setToken, removeToken } from '@/utils/token'
+import type { ApiOption } from '@/types/http'
+import { getToken, removeToken, setToken } from '@/utils/token'
+import { useTimeout } from '@vueuse/core'
 
 export const useUserStore = defineStore('user', () => {
+  const router = useRouter()
+  const route = useRoute()
   const user = ref<User | null>(null)
 
   const isLogin = computed(() => !!user.value)
 
   async function login() {
-    const { name, query } = router.currentRoute.value
+    const { name, query } = route
 
     if (name === RouteName.home) return
 
@@ -44,11 +48,11 @@ export const useUserStore = defineStore('user', () => {
 
       await getUser()
 
-      // router.replace(
-      //   (query.redirect as RouteLocationAsRelativeGeneric) || {
-      //     name: RouteName.home
-      //   }
-      // )
+      router.replace(
+        (query.redirect as RouteLocationAsRelativeGeneric) || {
+          name: RouteName.home
+        }
+      )
     } catch (error) {
       throw error
     }
@@ -79,17 +83,16 @@ export const useUserStore = defineStore('user', () => {
       switch (ROUTER_PERMISSION_TYPE) {
         case RouterPermission.DYNAMIC.valueOf():
           setRoutePermissionByDynamic(
-            permission,
             user.value?.routes as unknown as RouteRecordRaw[]
           )
           break
 
         case RouterPermission.ROLE.valueOf():
-          setRoutePermissionByRole(permission, user.value?.role as string)
+          setRoutePermissionByRole(user.value?.role as string)
           break
 
         case RouterPermission.AUTH.valueOf():
-          setRoutePermissionByAuth(permission)
+          setRoutePermissionByAuth()
           break
 
         default:
@@ -103,17 +106,23 @@ export const useUserStore = defineStore('user', () => {
   // 更新用户信息，apiParam 是接口参数，userParam 是用户信息参数，默认为 apiParam
   async function setUser(
     apiParam: Record<string, any>,
-    userParam?: Partial<User>
+    userParam?: Partial<User>,
+    apiOption?: ApiOption
   ) {
-    const res = await apiSetUser(apiParam)
+    const res = await apiSetUser(apiParam, apiOption)
 
     if (!res?.success) return
 
-    user.value = { ...user.value, ...(userParam || apiParam) } as User
-  }
+    useTimeout(2000, {
+      callback: () => {
+        // 组件卸载后禁止异步内容处理
+        if (apiOption?.componentInstance?.isUnmounted) return
 
-  function hasRoutePermission(name: string) {
-    return isLogin.value && hasRoutePermissionUtil(permission, name)
+        console.log('back')
+      }
+    })
+
+    user.value = { ...user.value, ...(userParam || apiParam) } as User
   }
 
   function toLogin() {
@@ -131,7 +140,7 @@ export const useUserStore = defineStore('user', () => {
 
     removeToken()
 
-    resetRoutePermission(permission)
+    resetRoutePermission()
   }
 
   return {
@@ -141,7 +150,6 @@ export const useUserStore = defineStore('user', () => {
     logout,
     getUser,
     setUser,
-    hasRoutePermission,
     toLogin
   }
 })

@@ -21,26 +21,18 @@ import LoadingTimer from './loading/timer'
 
 import { reqRepeat, reqRepeatByRes } from './req-repeat'
 
-import { handleResErrorCode } from './res-error-code'
 import { handleResDataCode, ResDataCode } from './res-data-code'
 import resDownload from './res-download'
+import { handleResErrorCode } from './res-error-code'
 import resTimeout from './res-timeout'
 
-import {
-  addResCache,
-  removeResCache,
-  getResCache,
-  hasResCache,
-  isValidCache
-} from './res-cache'
+import { addResCache, getResCacheData } from './res-cache'
 
 const loadingTimer = new LoadingTimer()
 
 function handleInterceptReq(instance: AxiosInstance, option?: ReqOption) {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      reqRepeat(config)
-
       // 有些第三方 api 需要做另外处理
       if (option?.handleReqConfig) option.handleReqConfig(config)
 
@@ -84,7 +76,7 @@ function handleInterceptRes(instance: AxiosInstance, option?: ResOption) {
         })
       }
 
-      reqRepeatByRes(err.config)
+      if (err.config) reqRepeatByRes(err.config)
 
       loadingTimer.stop()
 
@@ -103,7 +95,6 @@ function handleInterceptRes(instance: AxiosInstance, option?: ResOption) {
 async function handleReq<T>(
   instance: AxiosInstance,
   config: AxiosRequestConfig,
-  factoryOption: FactoryOption = {},
   apiOption: ApiOption = {}
 ) {
   try {
@@ -111,24 +102,33 @@ async function handleReq<T>(
       download: false,
       cache: false,
       cacheTime: 5 * 60 * 1000,
-      ...factoryOption,
       ...apiOption
     }
 
-    if (cache && hasResCache(config)) {
-      const cacheItem = getResCache(config)
+    if (cache) {
+      const data = getResCacheData(config, cacheTime)
 
-      if (cacheItem && isValidCache(config, cacheTime)) return cacheItem.data
+      if (data) {
+        if (download) {
+          resDownload(data)
 
-      removeResCache(config)
+          return
+        }
+
+        return data
+      }
     }
 
     loadingTimer.start(loadingTimerOption)
+
+    reqRepeat(config, apiOption)
 
     if (download) {
       const res = await instance<BlobPart>(config)
 
       resDownload(res)
+
+      if (cache) addResCache(config, res)
 
       return
     }
@@ -153,24 +153,17 @@ async function handleReq<T>(
 function genMethod(
   instance: AxiosInstance,
   method: Method,
-  factoryOption: FactoryOption
+  factoryOption: FactoryOption = {}
 ) {
   return async <T>(
     url: string,
     params: Record<string, any> = {},
     apiOption: ApiOption = {}
   ) => {
+    const option = { ...factoryOption, ...apiOption }
+
     const token = getToken()
-    const config: AxiosRequestConfig = {
-      method,
-      url,
-      timeout: apiOption.timeout,
-      responseType: apiOption.download ? 'arraybuffer' : undefined,
-      headers:
-        (apiOption.token || factoryOption.token) !== false && token
-          ? { Authorization: `Bearer ${token}` }
-          : undefined
-    }
+    const config: AxiosRequestConfig = { url, method }
 
     if (['get', 'del'].includes(method)) {
       config.params = params
@@ -178,13 +171,24 @@ function genMethod(
       config.data = params
     }
 
-    const reslut =
-      apiOption.fifo || factoryOption.fifo
-        ? fifo()(
-            () => handleReq<T>(instance, config, factoryOption, apiOption),
-            apiOption.fifoDelay || factoryOption.fifoDelay
-          )
-        : handleReq<T>(instance, config, factoryOption, apiOption)
+    if (apiOption.timeout) {
+      config.timeout = apiOption.timeout
+    }
+
+    if (apiOption.download) {
+      config.responseType = 'arraybuffer'
+    }
+
+    if (option.token && token) {
+      config.headers = {
+        ...(config.headers || {}),
+        Authorization: `Bearer ${token}`
+      }
+    }
+
+    const handle = () => handleReq<T>(instance, config, option)
+
+    const reslut = option.fifo ? fifo()(handle, option.fifoDelay) : handle()
 
     return reslut as unknown as ApiResult<T>
   }
